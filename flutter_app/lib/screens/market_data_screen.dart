@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/market_data_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/market_data_model.dart';
 import 'detail_screen.dart';
 
@@ -45,11 +47,43 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
           'Market Data',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        leading: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return PopupMenuButton<ThemeMode>(
+              icon: Icon(themeProvider.getThemeIcon()),
+              onSelected: (ThemeMode mode) {
+                themeProvider.setThemeMode(mode);
+              },
+              itemBuilder: (BuildContext context) =>
+                  <PopupMenuEntry<ThemeMode>>[
+                const PopupMenuItem<ThemeMode>(
+                  value: ThemeMode.system,
+                  child: ListTile(
+                    leading: Icon(Icons.brightness_auto_rounded),
+                    title: Text('System'),
+                  ),
+                ),
+                const PopupMenuItem<ThemeMode>(
+                  value: ThemeMode.light,
+                  child: ListTile(
+                    leading: Icon(Icons.light_mode_rounded),
+                    title: Text('Light'),
+                  ),
+                ),
+                const PopupMenuItem<ThemeMode>(
+                  value: ThemeMode.dark,
+                  child: ListTile(
+                    leading: Icon(Icons.dark_mode_rounded),
+                    title: Text('Dark'),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
         actions: [
           PopupMenuButton<SortOption>(
-            icon: const Icon(
-              Icons.sort_rounded,
-            ),
+            icon: const Icon(Icons.sort_rounded),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
@@ -67,27 +101,21 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
               const PopupMenuItem<SortOption>(
                 value: SortOption.symbol,
                 child: ListTile(
-                  leading: Icon(
-                    Icons.sort_by_alpha,
-                  ),
+                  leading: Icon(Icons.sort_by_alpha),
                   title: Text('Symbol'),
                 ),
               ),
               const PopupMenuItem<SortOption>(
                 value: SortOption.price,
                 child: ListTile(
-                  leading: Icon(
-                    Icons.attach_money,
-                  ),
+                  leading: Icon(Icons.attach_money),
                   title: Text('Price'),
                 ),
               ),
               const PopupMenuItem<SortOption>(
                 value: SortOption.change,
                 child: ListTile(
-                  leading: Icon(
-                    Icons.trending_up,
-                  ),
+                  leading: Icon(Icons.trending_up),
                   title: Text('Change'),
                 ),
               ),
@@ -98,12 +126,14 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
       body: Column(
         children: [
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               controller: _searchController,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9/]')),
+              ],
               decoration: InputDecoration(
-                hintText: 'Search assets...',
+                hintText: 'Search assets (e.g. BTC)...',
                 prefixIcon: const Icon(Icons.search_rounded),
                 filled: true,
                 fillColor: Theme.of(context)
@@ -167,7 +197,6 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          // Retry button
                           ElevatedButton.icon(
                             onPressed: () async =>
                                 await provider.loadMarketData(),
@@ -186,11 +215,9 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
                   );
                 }
 
-                // Get the list of market data
                 List<Data> marketDataList =
                     List.from(provider.marketData.data ?? []);
 
-                // Filter the list based on the search query
                 if (_searchQuery.isNotEmpty) {
                   marketDataList = marketDataList.where((data) {
                     return (data.symbol ?? '')
@@ -199,7 +226,6 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
                   }).toList();
                 }
 
-                // Sort the list based on the selected option
                 marketDataList.sort((a, b) {
                   int compare;
                   switch (_sortBy) {
@@ -217,7 +243,6 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
                   return _sortAscending ? compare : -compare;
                 });
 
-                // Display the list of market data
                 if (marketDataList.isEmpty) {
                   return Center(
                     child: Column(
@@ -232,16 +257,18 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
                   );
                 }
 
-                // Display the list of market data pull-refresh indicator
                 return RefreshIndicator(
                   onRefresh: () async => await provider.loadMarketData(),
                   child: ListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
+                    itemExtent: 92,
                     itemCount: marketDataList.length,
                     itemBuilder: (context, index) {
-                      final data = marketDataList[index];
-                      // Display the market data item
-                      return _MarketDataItem(data: data, index: index);
+                      return _MarketDataItem(
+                        key: ValueKey(marketDataList[index].symbol),
+                        data: marketDataList[index],
+                        index: index,
+                      );
                     },
                   ),
                 );
@@ -258,7 +285,7 @@ class _MarketDataItem extends StatelessWidget {
   final Data data;
   final int index;
 
-  const _MarketDataItem({required this.data, required this.index});
+  const _MarketDataItem({super.key, required this.data, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -269,147 +296,142 @@ class _MarketDataItem extends StatelessWidget {
     final isPositive = changePercent >= 0;
     final changeColor = isPositive ? Colors.green : Colors.red;
 
-    // Create the tween animation builder
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 400 + (index * 50)),
+      duration: Duration(milliseconds: 300 + (index * 30)),
       builder: (context, value, child) {
         return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+          offset: Offset(0, 15 * (1 - value)),
+          child: Opacity(opacity: value, child: child),
         );
       },
-      child: Card(
-        margin: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 6,
-        ),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.05),
+      child: Container(
+        height: 92,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Theme.of(context).dividerColor.withOpacity(0.05),
+            ),
           ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            // Navigate to the detail screen
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    DetailScreen(data: data),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(1.0, 0.0);
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOutCubic;
-                  var tween = Tween(begin: begin, end: end).chain(
-                    CurveTween(curve: curve),
-                  );
-                  return SlideTransition(
-                    position: animation.drive(tween),
-                    child: child,
-                  );
-                },
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: [
-                Hero(
-                  tag: 'avatar_${data.symbol}',
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryContainer,
-                    child: Text(
-                      data.symbol?.split('/').first ?? '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      DetailScreen(data: data),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutCubic;
+                    var tween = Tween(begin: begin, end: end).chain(
+                      CurveTween(curve: curve),
+                    );
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  Hero(
+                    tag: 'avatar_${data.symbol}',
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      child: Text(
+                        data.symbol?.split('/').first ?? '',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.symbol ?? 'Unknown',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Vol: ${NumberFormat.compactCurrency(symbol: '\$').format(data.volume ?? 0)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        data.symbol ?? 'Unknown',
+                        currencyFormat.format(data.price ?? 0),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'Vol: ${NumberFormat.compactCurrency(symbol: '\$').format(data.volume ?? 0)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).hintColor,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: changeColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPositive
+                                  ? Icons.arrow_drop_up
+                                  : Icons.arrow_drop_down,
+                              color: changeColor,
+                              size: 16,
+                            ),
+                            Text(
+                              percentFormat.format(changePercent.abs()),
+                              style: TextStyle(
+                                color: changeColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-
-                // Display the price
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      currencyFormat.format(data.price ?? 0),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Display the change percent
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: changeColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isPositive
-                                ? Icons.arrow_drop_up
-                                : Icons.arrow_drop_down,
-                            color: changeColor,
-                            size: 16,
-                          ),
-                          Text(
-                            percentFormat.format(changePercent.abs()),
-                            style: TextStyle(
-                              color: changeColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

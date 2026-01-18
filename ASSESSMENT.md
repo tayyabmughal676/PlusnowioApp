@@ -1,5 +1,16 @@
 # PulseNow Assessment Test has been completed and submitted by Tayyab Mughal (`https://www.linkedin.com/in/mrtayyabmughal/`)
 
+
+## Project Screenshots
+
+### App Gallery
+
+|                                                      |                                                      |                                                      |
+|:----------------------------------------------------:|:----------------------------------------------------:|:----------------------------------------------------:|
+| ![Preview 01](flutter_app/screenshots//img01.png)<br>Preview 01 | ![Preview 02](flutter_app/screenshots//img02.png)<br>Preview 02 | ![Preview 03](flutter_app/screenshots//img03.png)<br>Preview 03 |
+| ![Preview 04](flutter_app/screenshots//img04.png)<br>Preview 04 | ![Preview 05](flutter_app/screenshots//img05.png)<br>Preview 05 | ![Preview 06](flutter_app/screenshots//img06.png)<br>Preview 06 |
+| ![Preview 07](flutter_app/screenshots//img07.png)<br>Preview 07 |                                                      |                                                      |
+
 # PulseNow Flutter Developer Assessment
 
 ## Overview

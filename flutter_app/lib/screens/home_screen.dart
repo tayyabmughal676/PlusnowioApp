@@ -6,12 +6,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('PulseNow'),
-        elevation: 0,
-      ),
-      body: const MarketDataScreen(),
+    return const Scaffold(
+      // appBar: AppBar(
+      //   title: const Text('PulseNow'),
+      //   elevation: 0,
+      // ),
+      body: SafeArea(child: MarketDataScreen()),
     );
   }
 }

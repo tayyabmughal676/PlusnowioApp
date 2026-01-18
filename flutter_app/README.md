@@ -6,11 +6,11 @@ This is the Flutter application for the PulseNow assessment. Your task is to imp
 
 ### App Gallery
 
-| | | |
-| :---: | :---: | :---: |
-| ![Market Overview](./screenshots/img01.png)<br>Market Overview | ![Asset Details](./screenshots/img02.png)<br>Asset Details | ![Search & Filter](./screenshots/img03.png)<br>Search & Filter |
-| ![Dark Mode](./screenshots/img04.png)<br>Dark Mode | ![Analytics Overview](./screenshots/img05.png)<br>Analytics Overview | ![Market Trends](./screenshots/img06.png)<br>Market Trends |
-| ![Sentiment Analysis](./screenshots/img07.png)<br>Sentiment Analysis | | |
+|                                                              |                                                              |                                                           |
+|:------------------------------------------------------------:|:------------------------------------------------------------:|:---------------------------------------------------------:|
+|  ![Preview 01](./screenshots/img01.png)<br>Market Overview   |   ![Preview 02](./screenshots/img02.png)<br>Asset Details    | ![Preview 03](./screenshots/img03.png)<br>Search & Filter |
+|     ![Preview 04](./screenshots/img04.png)<br>Dark Mode      | ![Preview 05](./screenshots/img05.png)<br>Analytics Overview |  ![Preview 06](./screenshots/img06.png)<br>Market Trends  |
+| ![Preview 07](./screenshots/img07.png)<br>Sentiment Analysis |                                                              |                                                           |
 
 ## Setup
 

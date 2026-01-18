@@ -44,7 +44,7 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Market Data',
+          'Pulse Now',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: Consumer<ThemeProvider>(
@@ -126,7 +126,8 @@ class _MarketDataScreenState extends State<MarketDataScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               controller: _searchController,
               inputFormatters: [

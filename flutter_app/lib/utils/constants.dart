@@ -7,8 +7,8 @@ class AppConstants {
   static const String wsUrl = 'ws://127.0.0.1:3000';
 
   // For Android emulator, uncomment these:
-  // static const String baseUrl = 'http://127.0.0.1:3000/api';
-  // static const String wsUrl = 'ws://127.0.0.1:3000';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // static const String wsUrl = 'ws://10.0.2.2:3000';
 
   // API Endpoints
   static const String marketDataEndpoint = '/market-data';
